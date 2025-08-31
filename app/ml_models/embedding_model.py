@@ -1,12 +1,31 @@
-import fitz  # PyMuPDF
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras import layers, models
 
-def extract_text_from_pdf(pdf_path: str) -> str:
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
+vocab_size = 1000
+max_len = 20
+embed_dim = 16
 
-def split_text_to_sentences(text: str) -> list[str]:
-    sentences = [s.strip() for s in text.split('.') if len(s.strip()) > 0]
-    return sentences
+tokenizer = Tokenizer(num_words=vocab_size)
+
+def build_embedding_model():
+    model = models.Sequential([
+        layers.Embedding(input_dim=vocab_size, output_dim=embed_dim, input_length=max_len),
+        layers.GlobalAveragePooling1D(),
+    ])
+    return model
+
+model = build_embedding_model()
+
+def train_tokenizer(texts: list[str]):
+    tokenizer.fit_on_texts(texts)
+
+def texts_to_padded_sequences(texts: list[str]):
+    sequences = tokenizer.texts_to_sequences(texts)
+    padded = pad_sequences(sequences, maxlen=max_len, padding='post')
+    return padded
+
+def get_embeddings(texts: list[str]):
+    padded = texts_to_padded_sequences(texts)
+    embeddings = model.predict(padded)
+    return embeddings
