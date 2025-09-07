@@ -1,16 +1,10 @@
 import os
 
-import embeddings as embeddings
-
 from app.services.pdf_extraction import extract_text_from_pdf
 from app.services.epub_extraction import extract_text_from_epub
 from app.services.utils import split_text_to_sentences
 from app.ml_models.embedding_model import train_tokenizer, get_embeddings
 from app.services.vector_db import insert_embeddings_to_qdrant
-
-# Example call after generating embeddings:
-insert_embeddings_to_qdrant(embeddings, all_sentences, metadata_list)
-
 
 def gather_sentences_from_file_list(file_list):
     sentences = []
@@ -60,10 +54,16 @@ if __name__ == "__main__":
     all_sentences = sentences_from_files + sentences_from_folders
     print(f"Total sentences collected: {len(all_sentences)}")
 
-    # Proceed with tokenizer/model
+    # Proceed with tokenizer and embedding
     if all_sentences:
         train_tokenizer(all_sentences)
         embeddings = get_embeddings(all_sentences)
         print(f"Generated {len(embeddings)} embeddings from {len(all_sentences)} sentences.")
+
+        # If you have metadata, build it here. Otherwise:
+        metadata_list = None
+
+        # Store vectors in Qdrant
+        insert_embeddings_to_qdrant(embeddings, all_sentences, metadata_list)
     else:
         print("No sentences found to embed.")
