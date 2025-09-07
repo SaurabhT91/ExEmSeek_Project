@@ -1,8 +1,16 @@
 import os
+
+import embeddings as embeddings
+
 from app.services.pdf_extraction import extract_text_from_pdf
 from app.services.epub_extraction import extract_text_from_epub
 from app.services.utils import split_text_to_sentences
 from app.ml_models.embedding_model import train_tokenizer, get_embeddings
+from app.services.vector_db import insert_embeddings_to_qdrant
+
+# Example call after generating embeddings:
+insert_embeddings_to_qdrant(embeddings, all_sentences, metadata_list)
+
 
 def gather_sentences_from_file_list(file_list):
     sentences = []
