@@ -4,7 +4,7 @@ from app.services.pdf_extraction import extract_text_from_pdf
 from app.services.epub_extraction import extract_text_from_epub
 from app.services.utils import split_text_to_sentences
 from app.ml_models.embedding_model import train_tokenizer, get_embeddings
-from app.services.vector_db import insert_embeddings_to_qdrant
+from app.services.vector_db import insert_embeddings_to_qdrant, search_embeddings_in_qdrant
 
 def gather_sentences_from_file_list(file_list):
     sentences = []
@@ -65,5 +65,14 @@ if __name__ == "__main__":
 
         # Store vectors in Qdrant
         insert_embeddings_to_qdrant(embeddings, all_sentences, metadata_list)
+
+        # Prompt for user query and search
+        query = input("\nEnter your search query: ")
+        query_embedding = get_embeddings([query])[0]
+        results = search_embeddings_in_qdrant(query_embedding)
+
+        print("\nTop matches:")
+        for res in results:
+            print(f"- {res['sentence']} (score: {res['score']})")
     else:
         print("No sentences found to embed.")
